@@ -1,11 +1,17 @@
 import numpy as np
 import cv2 as cv
-import matplotlib.pyplot as plt
 import os
 from termcolor import colored
+from pytubefix import YouTube
+from pytubefix.cli import on_progress
 
-path = f'{os.getcwd()}\\Garp vs Aokiji Full Fight _ One Piece Anime.mp4'
-video = cv.VideoCapture(path)
+'''
+url = 'https://www.youtube.com/watch?v=GkOLkuHhU7s&t=14s'
+ytube = YouTube(url=url, on_progress_callback= on_progress)
+video = ytube.streams.get_by_resolution(360)
+print(video.title)
+video.download()'''
+
 def get_frames(path):
     #path = f'{os.getcwd()}\\Garp vs Aokiji.mp4'
     vid = cv.VideoCapture(path)
