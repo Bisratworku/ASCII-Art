@@ -37,21 +37,27 @@ def download_vid(link):
     os.remove(audio)
     return video, 'output.wav'
 #v, s =  download_vid('https://www.youtube.com/watch?v=pfZ5-sV2RlY&list=RDpfZ5-sV2RlY&start_radio=1')
-def play_sound(music):
+def play_sound(music, start_event, start_time_holder):
     try:
         mixer.music.load(music)
         mixer.music.set_volume(0.1)
-        mixer.music.play()   
+        start_event.wait()
+        start_time_holder['value'] = time.monotonic()
+        mixer.music.play()
         while mixer.music.get_busy():
-            time.sleep(0.1)
+            time.sleep(0.01)
     except Exception as e:
         print(e)
-    mixer.music.stop()
-    mixer.music.unload()
-#play_sound('output.wav')
-def ascii_frames(path):
+ 
+def ascii_frames(path, start_event, start_time_holder):
     img = get_frames(path)
     density = ['@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@']
+    start_event.wait()
+    while 'value' not in start_time_holder:
+        time.sleep(0.001)
+
+    start_time = start_time_holder['value']
+    frame_index = 0
     for i in img:
         atxt = ''
         color, gray = i
@@ -63,23 +69,34 @@ def ascii_frames(path):
                 Ccol , Gcol = col
                 txt += colored(density[Gcol], (Ccol[0], Ccol[1], Ccol[2]),attrs=['bold'])
             atxt += txt + '\n'
+
+        target_time = start_time + (frame_index / 24.0)
+        sleep_for = target_time - time.monotonic()
+        if sleep_for > 0:
+            time.sleep(sleep_for)
+
         print(atxt)
-        time.sleep(0.01)
-def remove_file(file):
-    os.remove(file)
+        frame_index += 1
+
 
 def main():
     url = input("Enter Youtube LInk  : ")
     video, sound = download_vid(url)
-    video_thread = threading.Thread(target = ascii_frames, args = (video, ))
-    audio_thread = threading.Thread(target = play_sound, args = (sound, ))
+    start_event = threading.Event()
+    start_time_holder = {}
+    video_thread = threading.Thread(target=ascii_frames, args=(video, start_event, start_time_holder))
+    audio_thread = threading.Thread(target=play_sound, args=(sound, start_event, start_time_holder))
     video_thread.start()
     audio_thread.start()
+    start_event.set()
     video_thread.join()
     audio_thread.join()
-    return video, sound  
+    return video, sound
+  
 if __name__ == '__main__' :
     v, s = main()
+    mixer.music.stop()
+    mixer.music.unload()
     os.remove(v)
     os.remove(s)
     
