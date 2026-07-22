@@ -91,8 +91,7 @@ def ascii_frames(path, start_event, start_time_holder):
         sys.stdout.flush()
 
 
-def main():
-    url = input("Enter Youtube LInk  : ")
+def main(url):
     video, sound = download_vid(url)
     start_event = threading.Event()
     start_time_holder = {}
@@ -108,9 +107,12 @@ def main():
 
 
 if __name__ == '__main__' :
-        
-    v, s = main()
-    mixer.music.stop()
-    mixer.music.unload()
-    os.remove(v)
-    os.remove(s)
+    url = input("Enter Youtube LInk [Press 'q' to quit] : ")
+    while True:
+        if url == 'q':
+            break
+        v, s = main(url)
+        mixer.music.stop()
+        mixer.music.unload()
+        os.remove(v)
+        os.remove(s)
