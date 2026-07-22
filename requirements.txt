@@ -1,0 +1,6 @@
+numpy
+cv2
+termcolor
+pytubefix
+pygame
+pydub

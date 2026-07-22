@@ -1,15 +1,20 @@
-
 import threading
 import numpy as np
 import cv2 as cv
 import os
+import sys
 import time
 from termcolor import colored
 from pytubefix import YouTube
 from pytubefix.cli import on_progress
 from pygame import mixer
 from pydub import AudioSegment
+
+
 mixer.init()
+
+
+
 
 def get_frames(path):
     vid = cv.VideoCapture(path)
@@ -19,8 +24,8 @@ def get_frames(path):
             print("the video is finished")
             break
         gray = cv.cvtColor(frame , cv.COLOR_BGR2GRAY)
-        gray = cv.resize(gray, (100, 35))
-        color = cv.resize(frame, (100, 35))
+        gray = cv.resize(gray, (100, 36))
+        color = cv.resize(frame, (100, 36))
         yield np.array(color),  np.array(gray)
     return 0
 def download_vid(link):
@@ -40,7 +45,7 @@ def download_vid(link):
 def play_sound(music, start_event, start_time_holder):
     try:
         mixer.music.load(music)
-        mixer.music.set_volume(0.1)
+        mixer.music.set_volume(0.2)
         start_event.wait()
         start_time_holder['value'] = time.monotonic()
         mixer.music.play()
@@ -58,25 +63,32 @@ def ascii_frames(path, start_event, start_time_holder):
 
     start_time = start_time_holder['value']
     frame_index = 0
-    for i in img:
-        atxt = ''
-        color, gray = i
-        gray = gray //25
-        for row in zip(color, gray):
-            Crow, Grow = row
-            txt = ''
-            for col in zip(Crow, Grow):
-                Ccol , Gcol = col
-                txt += colored(density[Gcol], (Ccol[0], Ccol[1], Ccol[2]),attrs=['bold'])
-            atxt += txt + '\n'
+    sys.stdout.write('\x1b[2J\x1b[H\x1b[?25l')
+    sys.stdout.flush()
+    try:
+        for i in img:
+            atxt = ''
+            color, gray = i
+            gray = gray //25
+            for row in zip(color, gray):
+                Crow, Grow = row
+                txt = ''
+                for col in zip(Crow, Grow):
+                    Ccol , Gcol = col
+                    txt += colored(density[Gcol], (Ccol[2], Ccol[1], Ccol[0]))
+                atxt += txt + '\n'
 
-        target_time = start_time + (frame_index / 24.0)
-        sleep_for = target_time - time.monotonic()
-        if sleep_for > 0:
-            time.sleep(sleep_for)
+            target_time = start_time + (frame_index / 24.0)
+            sleep_for = target_time - time.monotonic()
+            if sleep_for > 0:
+                time.sleep(sleep_for)
 
-        print(atxt)
-        frame_index += 1
+            sys.stdout.write('\x1b[H' + atxt)
+            sys.stdout.flush()
+            frame_index += 1
+    finally:
+        sys.stdout.write('\x1b[?25h')
+        sys.stdout.flush()
 
 
 def main():
@@ -91,14 +103,14 @@ def main():
     start_event.set()
     video_thread.join()
     audio_thread.join()
+    
     return video, sound
-  
+
+
 if __name__ == '__main__' :
+        
     v, s = main()
     mixer.music.stop()
     mixer.music.unload()
     os.remove(v)
     os.remove(s)
-    
-
-
