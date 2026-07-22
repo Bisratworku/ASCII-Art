@@ -1,6 +1,5 @@
 numpy
-cv2
+opencv-python
 termcolor
 pytubefix
-pygame
 pydub
