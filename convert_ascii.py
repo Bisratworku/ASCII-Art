@@ -107,8 +107,9 @@ def main(url):
 
 
 if __name__ == '__main__' :
-    url = input("Enter Youtube LInk [Press 'q' to quit] : ")
+    
     while True:
+        url = input("Enter Youtube LInk [Press 'q' to quit] : ")
         if url == 'q':
             break
         v, s = main(url)
