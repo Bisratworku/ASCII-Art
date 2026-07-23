@@ -1,5 +1,5 @@
 git clone https://github.com/Bisratworku/ASCII-Art.git
 cd ASCII-Art
-python convert_ascii.py
-
+pip install -r requirements.txt
+ehco "Installation is Finished"
 pause
